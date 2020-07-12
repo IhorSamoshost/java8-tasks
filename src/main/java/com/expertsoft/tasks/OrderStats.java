@@ -139,5 +139,6 @@ class OrderStats {
                     return prices.stream();
                 })
                 .collect(collector);
+
     }
 }
