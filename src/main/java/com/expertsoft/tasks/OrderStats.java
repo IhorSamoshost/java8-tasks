@@ -9,8 +9,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-//import static com.sun.tools.javac.util.List.collector;
-
 /**
  * This class provides several methods to collect statistical information from customers and orders of an e-shop.
  * Your task is to implement methods of this class using Java 8 Stream API.
@@ -100,7 +98,7 @@ class OrderStats {
      */
     static Optional<String> mostPopularCountry(final Stream<Customer> customers) {
         try {
-            Map<String, Long> customerCountryCountMap = customers.map(c->c.getAddress().getCountry())
+            Map<String, Long> customerCountryCountMap = customers.map(c -> c.getAddress().getCountry())
                     .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
             Long maxCount = customerCountryCountMap.values().stream().max(Long::compareTo).get();
             return customerCountryCountMap.entrySet().stream().filter(m -> maxCount.equals(m.getValue()))
@@ -131,14 +129,15 @@ class OrderStats {
      */
     static BigDecimal averageProductPriceForCreditCard(final Stream<Customer> customers, final String cardNumber) {
         final AveragingBigDecimalCollector collector = new AveragingBigDecimalCollector();
-        final List <BigDecimal> prices = new ArrayList<>();
-        return customers.flatMap(c->c.getOrders().stream().filter(order -> order.getPaymentInfo().getCardNumber().equals(cardNumber)))
-                .flatMap(order-> order.getOrderItems().stream())
-                .flatMap(orderItem -> {for (int i=1; i<=orderItem.getQuantity(); i++) {prices.add(orderItem.getProduct().getPrice());} return prices.stream();})
+        final List<BigDecimal> prices = new ArrayList<>();
+        return customers.flatMap(c -> c.getOrders().stream().filter(order -> order.getPaymentInfo().getCardNumber().equals(cardNumber)))
+                .flatMap(order -> order.getOrderItems().stream())
+                .flatMap(orderItem -> {
+                    for (int i = 1; i <= orderItem.getQuantity(); i++) {
+                        prices.add(orderItem.getProduct().getPrice());
+                    }
+                    return prices.stream();
+                })
                 .collect(collector);
-//        return customers.flatMap(c->c.getOrders().stream().filter(order -> order.getPaymentInfo().getCardNumber().equals(cardNumber)))
-//                .flatMap(order-> order.getOrderItems().stream())
-//                .map(orderItem -> orderItem.getProduct().getPrice().multiply(BigDecimal.valueOf(orderItem.getQuantity())))
-//                .collect(collector);
     }
 }
