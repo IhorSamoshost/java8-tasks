@@ -97,15 +97,22 @@ class OrderStats {
      * @return java.util.Optional containing the name of the most popular country
      */
     static Optional<String> mostPopularCountry(final Stream<Customer> customers) {
-        try {
-            Map<String, Long> customerCountryCountMap = customers.map(c -> c.getAddress().getCountry())
-                    .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
-            Long maxCount = customerCountryCountMap.values().stream().max(Long::compareTo).get();
-            return customerCountryCountMap.entrySet().stream().filter(m -> maxCount.equals(m.getValue()))
-                    .map(Map.Entry::getKey).reduce((k1, k2) -> k1.length() > k2.length() ? k1 : k2);
-        } catch (NoSuchElementException e) {
-            return Optional.empty();
-        }
+        Map<String, Long> customerCountryCountMap = customers.map(c -> c.getAddress().getCountry())
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+//      этот if нужен, чтобы убрать NoSuchElementException:
+        if(customerCountryCountMap.isEmpty()) return Optional.empty();
+//----------------------------------------------------
+//      это был мой первый вариант (рабочий, но по Вашему мнению сложный):
+//        правда, я тут в return знак < с > перепутал, но тесты проходили :)
+//        Long maxCount = customerCountryCountMap.values().stream().max(Long::compareTo).get();
+//        return customerCountryCountMap.entrySet().stream().filter(m -> maxCount.equals(m.getValue()))
+//                .map(Map.Entry::getKey).reduce((k1, k2) -> k1.length() < k2.length() ? k1 : k2);
+//----------------------------------------------------
+//      это новый вариант с использованием предложенной Вами ссылки:
+        long maxCount = customerCountryCountMap.values().stream().max(Comparator.naturalOrder()).get();
+        List <String> maxCountryList = customerCountryCountMap.entrySet().stream()
+                .filter(m -> m.getValue() == maxCount).map(Map.Entry::getKey).collect(Collectors.toList());
+        return maxCountryList.stream().reduce((k1, k2) -> k1.length() > k2.length() ? k2 : k1);
     }
 
     /**
